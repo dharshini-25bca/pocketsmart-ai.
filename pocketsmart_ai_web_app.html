@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketSmart AI - Smart Budget & Shopping Planner</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-200">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">PocketSmart AI</span>
+                    <span class="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-200">v2.0 Flash</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="toggleApiKeyModal()" class="flex items-center gap-2 text-xs font-medium px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all border border-slate-300">
+                    <i data-lucide="key" class="w-4 h-4 text-indigo-600"></i>
+                    <span id="apiKeyStatus">Set Gemini Key</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        
+        <!-- Hero Title -->
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                AI Budgeting & Recommendation Engine
+            </h1>
+            <p class="mt-3 text-slate-600 text-sm sm:text-base">
+                Plan your home interior, organize parties, or pair accessories within your exact budget using generative AI recommendations.
+            </p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex justify-center mb-8">
+            <div class="inline-flex p-1 bg-slate-200/70 rounded-2xl shadow-inner gap-1">
+                <button id="tab-home" onclick="switchTab('home')" class="tab-btn active flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm">
+                    <i data-lucide="home" class="w-4 h-4"></i> Home Interior
+                </button>
+                <button id="tab-party" onclick="switchTab('party')" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:text-slate-900">
+                    <i data-lucide="party-popper" class="w-4 h-4"></i> Party Planner
+                </button>
+                <button id="tab-jewelry" onclick="switchTab('jewelry')" class="tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:text-slate-900">
+                    <i data-lucide="gem" class="w-4 h-4"></i> Jewelry & Fashion
+                </button>
+            </div>
+        </div>
+
+        <!-- Section Containers -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Panel: Input Forms -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                
+                <!-- Home Interior Form -->
+                <form id="form-home" class="space-y-4" onsubmit="handleFormSubmit(event, 'home')">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="sofa" class="w-5 h-5 text-indigo-600"></i> Interior Budgeting
+                    </h2>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Room Type</label>
+                        <select id="home-room" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="Living Room">Living Room</option>
+                            <option value="Master Bedroom">Master Bedroom</option>
+                            <option value="Home Office">Home Office</option>
+                            <option value="Dining Room">Dining Room</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Total Budget (INR ₹)</label>
+                        <input type="number" id="home-budget" value="50000" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Aesthetic Preference</label>
+                        <select id="home-style" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="Modern Minimalist">Modern Minimalist</option>
+                            <option value="Boho Chic">Boho Chic</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="Traditional Indian">Traditional Indian</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg transition-all shadow-md flex items-center justify-center gap-2">
+                        <i data-lucide="wand-2" class="w-4 h-4"></i> Generate Budget Breakdown
+                    </button>
+                </form>
+
+                <!-- Party Planner Form -->
+                <form id="form-party" class="space-y-4 hidden" onsubmit="handleFormSubmit(event, 'party')">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="cake" class="w-5 h-5 text-indigo-600"></i> Event Budgeting
+                    </h2>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Event Type</label>
+                        <input type="text" id="party-type" value="Birthday Party" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Guest Count</label>
+                            <input type="number" id="party-guests" value="25" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Budget (INR ₹)</label>
+                            <input type="number" id="party-budget" value="15000" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Food Preference</label>
+                        <select id="party-food" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="Buffet & Snacks">Buffet & Finger Food</option>
+                            <option value="Home Delivery Packages">Home Delivery Packages</option>
+                            <option value="DIY Barbecue & Drinks">DIY Barbecue & Drinks</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg transition-all shadow-md flex items-center justify-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Plan Party Budget
+                    </button>
+                </form>
+
+                <!-- Jewelry Matching Form -->
+                <form id="form-jewelry" class="space-y-4 hidden" onsubmit="handleFormSubmit(event, 'jewelry')">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="gem" class="w-5 h-5 text-indigo-600"></i> Jewelry Matcher
+                    </h2>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Outfit Description / Color</label>
+                        <input type="text" id="jewelry-outfit" value="Emerald Green Silk Saree" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Target Budget (INR ₹)</label>
+                        <input type="number" id="jewelry-budget" value="8000" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Preferred Style</label>
+                        <select id="jewelry-style" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="Kundan / Antique Gold">Kundan / Antique Gold</option>
+                            <option value="Minimalist Silver">Minimalist Silver</option>
+                            <option value="American Diamond / Contemporary">American Diamond / Contemporary</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg transition-all shadow-md flex items-center justify-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4"></i> Find Accessories
+                    </button>
+                </form>
+
+            </div>
+
+            <!-- Right Panel: Output & AI Recommendations -->
+            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[420px]">
+                
+                <!-- Placeholder / Loading State -->
+                <div id="loading-state" class="hidden flex flex-col items-center justify-center py-20 text-center space-y-4">
+                    <div class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-slate-600 font-medium text-sm">Gemini AI is crafting your tailored budget plan...</p>
+                </div>
+
+                <div id="initial-state" class="flex flex-col items-center justify-center py-20 text-center text-slate-400 space-y-3">
+                    <i data-lucide="sparkles" class="w-12 h-12 text-slate-300"></i>
+                    <p class="text-sm font-medium">Select a category on the left and click generate to view AI-powered recommendations.</p>
+                </div>
+
+                <!-- Output Display Container -->
+                <div id="output-container" class="hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <div>
+                            <h3 id="output-title" class="text-xl font-bold text-slate-900">Recommended Plan</h3>
+                            <p id="output-subtitle" class="text-xs text-slate-500 mt-1"></p>
+                        </div>
+                        <span id="output-badge" class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200">Within Budget</span>
+                    </div>
+
+                    <!-- Allocation Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-50 text-slate-700 uppercase font-semibold">
+                                <tr>
+                                    <th class="py-2.5 px-3 rounded-l-lg">Item</th>
+                                    <th class="py-2.5 px-3">Category</th>
+                                    <th class="py-2.5 px-3">Est. Cost</th>
+                                    <th class="py-2.5 px-3 text-right rounded-r-lg">Store Link</th>
+                                </tr>
+                            </thead>
+                            <tbody id="output-table-body" class="divide-y divide-slate-100 font-medium">
+                                <!-- Dynamic rows inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- AI Summary Box -->
+                    <div class="p-4 bg-indigo-50/70 border border-indigo-100 rounded-xl space-y-2">
+                        <h4 class="text-xs font-bold uppercase text-indigo-900 flex items-center gap-1.5">
+                            <i data-lucide="bot" class="w-4 h-4 text-indigo-600"></i> AI Smart Insights
+                        </h4>
+                        <p id="output-ai-insight" class="text-xs text-indigo-950 leading-relaxed"></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            PocketSmart AI &copy; 2026 — Powered by Google Gemini API & Tailwind CSS
+        </div>
+    </footer>
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-slate-900 text-lg">Configure Gemini API Key</h3>
+                <button onclick="toggleApiKeyModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-600">
+                Enter your Google AI Studio API key to enable live generative AI planning. If left blank, PocketSmart will use dynamic fallback simulations.
+            </p>
+            <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="toggleApiKeyModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        lucide.createIcons();
+
+        let currentTab = 'home';
+        let apiKey = localStorage.getItem('gemini_api_key') || '';
+
+        function updateApiKeyStatus() {
+            const statusEl = document.getElementById('apiKeyStatus');
+            if (apiKey) {
+                statusEl.innerText = 'Key Configured';
+                statusEl.classList.add('text-emerald-600');
+            } else {
+                statusEl.innerText = 'Set Gemini Key';
+                statusEl.classList.remove('text-emerald-600');
+            }
+        }
+        updateApiKeyStatus();
+
+        function toggleApiKeyModal() {
+            const modal = document.getElementById('apiKeyModal');
+            document.getElementById('apiKeyInput').value = apiKey;
+            modal.classList.toggle('hidden');
+        }
+
+        function saveApiKey() {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('gemini_api_key', apiKey);
+            updateApiKeyStatus();
+            toggleApiKeyModal();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            ['home', 'party', 'jewelry'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const form = document.getElementById(`form-${t}`);
+                if (t === tab) {
+                    btn.className = 'tab-btn active flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all bg-white text-indigo-600 shadow-sm';
+                    form.classList.remove('hidden');
+                } else {
+                    btn.className = 'tab-btn flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 hover:text-slate-900';
+                    form.classList.add('hidden');
+                }
+            });
+        }
+
+        async function handleFormSubmit(event, type) {
+            event.preventDefault();
+            
+            document.getElementById('initial-state').classList.add('hidden');
+            document.getElementById('output-container').classList.add('hidden');
+            document.getElementById('loading-state').classList.remove('hidden');
+
+            let prompt = '';
+            let budget = 0;
+
+            if (type === 'home') {
+                const room = document.getElementById('home-room').value;
+                budget = parseFloat(document.getElementById('home-budget').value);
+                const style = document.getElementById('home-style').value;
+                prompt = `Provide a detailed interior budget allocation for a ${style} ${room} with a total budget of ₹${budget}. Return JSON format with items array containing "item", "category", "cost", and "store" (IKEA, Amazon, or Pepperfry).`;
+            } else if (type === 'party') {
+                const pType = document.getElementById('party-type').value;
+                const guests = document.getElementById('party-guests').value;
+                budget = parseFloat(document.getElementById('party-budget').value);
+                const food = document.getElementById('party-food').value;
+                prompt = `Provide a party budget allocation for ${guests} guests for a ${pType} with ₹${budget} budget and ${food}. Return JSON format with items array containing "item", "category", "cost", and "store" (Swiggy, Amazon, or Zomato).`;
+            } else if (type === 'jewelry') {
+                const outfit = document.getElementById('jewelry-outfit').value;
+                budget = parseFloat(document.getElementById('jewelry-budget').value);
+                const style = document.getElementById('jewelry-style').value;
+                prompt = `Recommend jewelry pieces matching a ${outfit} in ${style} style within ₹${budget}. Return JSON format with items array containing "item", "category", "cost", and "store" (Amazon or Flipkart).`;
+            }
+
+            let resultData;
+            if (apiKey) {
+                try {
+                    resultData = await fetchFromGemini(prompt, budget);
+                } catch (e) {
+                    console.warn('Gemini API call failed, falling back to local simulation:', e);
+                    resultData = generateFallbackData(type, budget);
+                }
+            } else {
+                // Simulate delay
+                await new Promise(r => setTimeout(r, 1000));
+                resultData = generateFallbackData(type, budget);
+            }
+
+            renderResults(resultData, type, budget);
+        }
+
+        async function fetchFromGemini(prompt, totalBudget) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: `${prompt}\nRespond ONLY in valid JSON with schema: {"items": [{"item": string, "category": string, "cost": number, "store": string}], "insight": string}` }]
+                    }]
+                })
+            });
+            const data = await response.json();
+            const textResponse = data.candidates[0].content.parts[0].text;
+            const cleanedJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleanedJson);
+        }
+
+        function generateFallbackData(type, budget) {
+            if (type === 'home') {
+                return {
+                    items: [
+                        { item: "3-Seater Fabric Sofa", category: "Furniture", cost: Math.round(budget * 0.45), store: "IKEA" },
+                        { item: "Accent Coffee Table", category: "Furniture", cost: Math.round(budget * 0.20), store: "Pepperfry" },
+                        { item: "Warm LED Floor Lamp", category: "Lighting", cost: Math.round(budget * 0.15), store: "Amazon" },
+                        { item: "Textured Throw Rug", category: "Decor", cost: Math.round(budget * 0.12), store: "Amazon" }
+                    ],
+                    insight: `We allocated 65% of your budget to foundational furniture pieces and balanced the remaining budget across lighting and decor accents.`
+                };
+            } else if (type === 'party') {
+                return {
+                    items: [
+                        { item: "Catered Party Platter", category: "Food & Drinks", cost: Math.round(budget * 0.50), store: "Swiggy" },
+                        { item: "Theme Balloon Arch & Banner", category: "Decor", cost: Math.round(budget * 0.20), store: "Amazon" },
+                        { item: "Custom Birthday Cake", category: "Dessert", cost: Math.round(budget * 0.18), store: "Zomato" },
+                        { item: "Disposable Cutlery & Games", category: "Supplies", cost: Math.round(budget * 0.10), store: "Amazon" }
+                    ],
+                    insight: `Focusing primary expenditure on catering ensures guests stay well fed, while budget-friendly Amazon decor handles ambient styling.`
+                };
+            } else {
+                return {
+                    items: [
+                        { item: "Statement Choker Necklace Set", category: "Neckwear", cost: Math.round(budget * 0.55), store: "Amazon" },
+                        { item: "Matching Jhumka Earrings", category: "Earrings", cost: Math.round(budget * 0.25), store: "Flipkart" },
+                        { item: "Embellished Bangles Set", category: "Wristwear", cost: Math.round(budget * 0.15), store: "Amazon" }
+                    ],
+                    insight: `Selected a regal statement piece to anchor the look, paired with subtle complementary earrings and wrist accessories.`
+                };
+            }
+        }
+
+        function renderResults(data, type, budget) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('output-container').classList.remove('hidden');
+
+            const titleEl = document.getElementById('output-title');
+            const subTitleEl = document.getElementById('output-subtitle');
+            
+            if (type === 'home') {
+                titleEl.innerText = "Home Interior Plan";
+                subTitleEl.innerText = `Budget Allocation for ₹${budget.toLocaleString('en-IN')}`;
+            } else if (type === 'party') {
+                titleEl.innerText = "Party Event Plan";
+                subTitleEl.innerText = `Event Budget Plan for ₹${budget.toLocaleString('en-IN')}`;
+            } else {
+                titleEl.innerText = "Jewelry & Accessory Plan";
+                subTitleEl.innerText = `Fashion Match Breakdown for ₹${budget.toLocaleString('en-IN')}`;
+            }
+
+            const tbody = document.getElementById('output-table-body');
+            tbody.innerHTML = '';
+
+            let totalSpent = 0;
+
+            data.items.forEach(item => {
+                totalSpent += item.cost;
+                const storeQuery = encodeURIComponent(item.item);
+                const storeUrl = item.store.toLowerCase().includes('amazon') ? `https://www.amazon.in/s?k=${storeQuery}` :
+                                 item.store.toLowerCase().includes('ikea') ? `https://www.ikea.com/in/en/search/?q=${storeQuery}` :
+                                 item.store.toLowerCase().includes('flipkart') ? `https://www.flipkart.com/search?q=${storeQuery}` :
+                                 `https://www.google.com/search?q=${storeQuery}+${item.store}`;
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors";
+                row.innerHTML = `
+                    <td class="py-3 px-3 font-semibold text-slate-800">${item.item}</td>
+                    <td class="py-3 px-3 text-slate-500">${item.category}</td>
+                    <td class="py-3 px-3 font-medium text-slate-900">₹${item.cost.toLocaleString('en-IN')}</td>
+                    <td class="py-3 px-3 text-right">
+                        <a href="${storeUrl}" target="_blank" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold text-xs">
+                            ${item.store} <i data-lucide="external-link" class="w-3 h-3"></i>
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('output-ai-insight').innerText = data.insight || "AI has generated a optimal allocation tailored to your specific budget constraints.";
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
