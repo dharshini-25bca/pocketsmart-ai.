@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketSmart AI - GitHub Enabled</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            github: {
+              bg: '#0d1117',
+              border: '#30363d',
+              card: '#161b22',
+              green: '#238636',
+              greenHover: '#2ea043'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+
+<body class="h-full flex flex-col md:flex-row overflow-hidden bg-slate-950 text-slate-100">
+
+<!-- Sidebar Navigation -->
+<aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0">
+  <div>
+    <!-- Logo Header -->
+    <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid me-0 fa-wallet text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-none text-white tracking-wide">PocketSmart</h1>
+          <span class="text-xs text-indigo-400 font-medium">AI & GitHub Sync</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="p-3 space-y-1">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+        <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+      </button>
+
+      <button onclick="switchTab('transactions')" id="nav-transactions" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+        <i class="fa-solid fa-receipt w-5"></i> Transactions
+      </button>
+
+      <button onclick="switchTab('github')" id="nav-github" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all relative">
+        <i class="fa-brands fa-github text-lg w-5"></i> 
+        <span>GitHub Sync</span>
+        <span id="nav-github-badge" class="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Offline</span>
+      </button>
+
+      <button onclick="switchTab('ai-advisor')" id="nav-ai-advisor" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+        <i class="fa-solid fa-wand-magic-sparkles text-purple-400 w-5"></i> AI Advisor
+      </button>
+    </nav>
+  </div>
+
+  <!-- GitHub Quick Connection Status Widget -->
+  <div class="p-4 m-3 rounded-2xl bg-slate-800/60 border border-slate-700/50 text-xs">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-slate-400 font-medium flex items-center gap-1.5">
+        <i class="fa-brands fa-github text-slate-300"></i> Repo Status
+      </span>
+      <span id="quick-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+    </div>
+    <div id="quick-repo-name" class="font-mono text-slate-200 truncate mb-2 text-[11px]">Not Connected</div>
+    <button onclick="switchTab('github')" class="w-full py-1.5 px-3 rounded-lg bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 transition-colors font-medium text-center block">
+      Manage Repository
+    </button>
+  </div>
+</aside>
+
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
+
+  <!-- Top Header bar -->
+  <header class="h-16 border-b border-slate-800 px-6 flex items-center justify-between shrink-0 bg-slate-900/50 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <h2 id="page-title" class="text-lg font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-chart-pie text-indigo-400"></i> Financial Dashboard
+      </h2>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center gap-3">
+      <button onclick="openAddModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all">
+        <i class="fa-solid fa-plus"></i> New Record
+      </button>
+      <button onclick="triggerQuickGitHubSync()" id="quick-sync-btn" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 border border-slate-700 transition-all">
+        <i class="fa-solid fa-rotate text-indigo-400" id="quick-sync-icon"></i> Push to GitHub
+      </button>
+    </div>
+  </header>
+
+  <!-- Content Container -->
+  <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+
+    <!-- TAB 1: DASHBOARD VIEW -->
+    <section id="tab-dashboard" class="tab-content space-y-6">
+      
+      <!-- Key Financial Metrics Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Balance Card -->
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/20 shadow-xl relative overflow-hidden">
+          <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Net Balance</div>
+          <div id="stat-balance" class="text-2xl font-extrabold text-white">$0.00</div>
+          <div class="mt-3 flex items-center text-xs text-emerald-400 gap-1 font-medium">
+            <i class="fa-solid fa-arrow-up-right"></i> Updated live from records
+          </div>
+          <i class="fa-solid fa-wallet absolute -right-3 -bottom-3 text-6xl text-indigo-500/10"></i>
+        </div>
+
+        <!-- Monthly Income Card -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Total Income</div>
+          <div id="stat-income" class="text-2xl font-extrabold text-emerald-400">$0.00</div>
+          <div class="mt-3 text-xs text-slate-500">Includes all revenue sources</div>
+        </div>
+
+        <!-- Monthly Expenses Card -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Total Expenses</div>
+          <div id="stat-expenses" class="text-2xl font-extrabold text-rose-400">$0.00</div>
+          <div class="mt-3 text-xs text-slate-500">Tracked categories</div>
+        </div>
+
+        <!-- GitHub Cloud Sync Status Card -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">GitHub Cloud Backup</div>
+          <div id="stat-github-status" class="text-lg font-bold text-amber-400 truncate">Not Synced</div>
+          <div id="stat-github-sub" class="mt-2 text-xs text-slate-400 truncate">Connect PAT token to activate</div>
+        </div>
+      </div>
+
+      <!-- Charts & Visualizations -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-indigo-400"></i> Cash Flow & Spending Breakdown
+            </h3>
+          </div>
+          <div class="h-64 relative">
+            <canvas id="expenseChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Transactions Quick Feed -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-white text-sm">Recent Transactions</h3>
+              <button onclick="switchTab('transactions')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">View All</button>
+            </div>
+            <div id="dashboard-recent-list" class="space-y-3">
+              <!-- Inserted dynamically -->
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-800 mt-4 text-center">
+            <button onclick="openAddModal()" class="text-xs text-indigo-400 hover:underline font-medium">
+              + Add Transaction Record
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: TRANSACTIONS VIEW -->
+    <section id="tab-transactions" class="tab-content space-y-4 hidden">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+        <!-- Search bar -->
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+          <input type="text" id="search-input" onkeyup="renderTransactions()" placeholder="Search description or category..." class="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- Category Filter -->
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <select id="filter-category" onchange="renderTransactions()" class="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none">
+            <option value="ALL">All Categories</option>
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Salary">Salary</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Bills & Utilities">Bills & Utilities</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Entertainment">Entertainment</option>
+          </select>
+          <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold whitespace-nowrap hover:bg-indigo-500">
+            + Add Record
+          </button>
+        </div>
+      </div>
+
+      <!-- Transactions Table -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-slate-400 uppercase text-[10px] tracking-wider font-semibold">
+              <tr>
+                <th class="p-4">Date</th>
+                <th class="p-4">Description</th>
+                <th class="p-4">Category</th>
+                <th class="p-4">Type</th>
+                <th class="p-4 text-right">Amount</th>
+                <th class="p-4 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-table-body" class="divide-y divide-slate-800 text-slate-300">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: GITHUB INTEGRATION VIEW -->
+    <section id="tab-github" class="tab-content space-y-6 hidden">
+      
+      <!-- GitHub Integration Header -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-github-card to-slate-900 border border-github-border shadow-2xl relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-slate-950 border border-slate-700 flex items-center justify-center text-3xl text-white shadow-xl">
+              <i class="fa-brands fa-github"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                GitHub Repository Synchronization
+              </h3>
+              <p class="text-xs text-slate-400 mt-1 max-w-xl">
+                Connect your GitHub repository to securely back up, sync, and version-control your personal financial records, budgets, and AI insights.
+              </p>
+            </div>
+          </div>
+
+          <!-- Connection Status Pill -->
+          <div id="gh-status-banner" class="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-slate-500" id="gh-status-dot"></span>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Connection State</div>
+              <div id="gh-status-text" class="text-xs font-semibold text-slate-200">Disconnected</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Setup Form & Controls -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Configuration Form -->
+        <div class="lg:col-span-2 space-y-6">
+          <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-5">
+            <h4 class="font-bold text-white text-sm flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-key text-indigo-400"></i> GitHub Credentials & Repository Settings
+            </h4>
+
+            <div class="space-y-4">
+              <!-- Personal Access Token -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                  GitHub Personal Access Token (PAT)
+                </label>
+                <div class="relative">
+                  <input type="password" id="gh-pat-token" placeholder="ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" class="w-full pl-3 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500">
+                  <button type="button" onclick="toggleTokenVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-sm">
+                    <i class="fa-solid fa-eye" id="toggle-token-icon"></i>
+                  </button>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">Requires <code class="bg-slate-800 px-1 py-0.5 rounded text-indigo-300">repo</code> scope for private repos or public access for public repos.</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Repository Owner / Name -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Repository Identifier (owner/repo)
+                  </label>
+                  <input type="text" id="gh-repo-path" placeholder="username/my-pocketsmart-backup" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- Branch Name -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Target Branch</label>
+                  <input type="text" id="gh-branch-name" value="main" placeholder="main" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+              </div>
+
+              <!-- Storage File Path inside Repo -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">File Sync Path inside Repository</label>
+                <input type="text" id="gh-file-path" value="data/pocketsmart_backup.json" placeholder="data/pocketsmart_backup.json" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-4 border-t border-slate-800 flex flex-wrap gap-3">
+              <button onclick="saveGitHubConfig()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                <i class="fa-solid fa-floppy-disk"></i> Save Settings
+              </button>
+              <button onclick="testGitHubConnection()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-plug text-emerald-400"></i> Test Connection
+              </button>
+            </div>
+          </div>
+
+          <!-- Manual Push / Pull Cloud Sync Operations -->
+          <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+            <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-arrows-rotate text-purple-400"></i> Cloud Data Synchronization Operations
+            </h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Push Card -->
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
+                <div>
+                  <div class="font-semibold text-xs text-emerald-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Push to GitHub Repo
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-1">
+                    Upload and commit current local transactions and settings to your repository file.
+                  </p>
+                </div>
+                <button onclick="pushToGitHub()" id="btn-push-gh" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-upload"></i> Commit & Push Data
+                </button>
+              </div>
+
+              <!-- Pull Card -->
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
+                <div>
+                  <div class="font-semibold text-xs text-sky-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> Pull from GitHub Repo
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-1">
+                    Download and replace local data with the latest backup stored in your repository.
+                  </p>
+                </div>
+                <button onclick="pullFromGitHub()" id="btn-pull-gh" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-download"></i> Fetch & Restore Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Repo Info & Commit Logs -->
+        <div class="space-y-6">
+          <!-- Repo Specs Card -->
+          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+            <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-circle-info text-sky-400"></i> Repository Information
+            </h4>
+            <div id="repo-meta-box" class="space-y-3 text-xs text-slate-300">
+              <div class="flex justify-between border-b border-slate-800 pb-2">
+                <span class="text-slate-500">Repository</span>
+                <span id="meta-repo-name" class="font-mono text-indigo-300">--</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-800 pb-2">
+                <span class="text-slate-500">Stars</span>
+                <span id="meta-repo-stars" class="font-mono text-amber-400">0 ★</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-800 pb-2">
+                <span class="text-slate-500">Default Branch</span>
+                <span id="meta-repo-branch" class="font-mono text-slate-200">--</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Visibility</span>
+                <span id="meta-repo-vis" class="font-mono text-slate-200">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Commit Logs Feed -->
+          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                <i class="fa-solid fa-code-commit text-purple-400"></i> Recent Commits
+              </h4>
+              <button onclick="fetchCommitHistory()" class="text-[11px] text-indigo-400 hover:underline">
+                Refresh
+              </button>
+            </div>
+            <div id="commit-history-list" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+              <div class="text-center py-6 text-slate-500 text-xs">
+                No commit logs loaded. Click test connection or refresh.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: AI ADVISOR VIEW -->
+    <section id="tab-ai-advisor" class="tab-content space-y-6 hidden">
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-purple-900/30 via-indigo-900/20 to-slate-900 border border-purple-500/20 shadow-xl">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-purple-600/20 text-purple-300 border border-purple-500/30 flex items-center justify-center text-2xl">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Smart AI Financial Advisor</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Automated spending analysis, budget health evaluation, and GitHub summary generation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+          <h4 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-brain text-indigo-400"></i> AI Insights & Analysis Output
+          </h4>
+          
+          <div id="ai-response-box" class="p-4 rounded-xl bg-slate-950 border border-slate-800 min-h-[180px] text-xs text-slate-300 space-y-2 leading-relaxed">
+            Click an AI prompt below to generate an automated financial diagnostic report based on your recorded transactions.
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-2">
+            <button onclick="runAIAdvisor('spending')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700">
+              💡 Analyze Spending Habits
+            </button>
+            <button onclick="runAIAdvisor('budget')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium border border-slate-700">
+              📊 Budget Health Score
+            </button>
+            <button onclick="runAIAdvisor('github-report')" class="px-3 py-2 bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-200 rounded-xl text-xs font-medium border border-indigo-700/50">
+              📝 Generate GitHub Markdown Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Financial Health Indicators -->
+        <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+          <h4 class="font-bold text-white text-sm">Financial Health Metrics</h4>
+          <div class="space-y-4 text-xs">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-400">Savings Ratio</span>
+                <span id="health-savings-pct" class="font-bold text-emerald-400">0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div id="health-savings-bar" class="bg-emerald-500 h-2 rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-slate-400">Expense/Income Balance</span>
+                <span id="health-burn-pct" class="font-bold text-indigo-400">0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2">
+                <div id="health-burn-bar" class="bg-indigo-500 h-2 rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Modal: Add New Transaction -->
+<div id="modal-add" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <h3 class="font-bold text-white text-base">Add Transaction Record</h3>
+      <button onclick="closeAddModal()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <form id="add-transaction-form" onsubmit="handleSaveTransaction(event)" class="space-y-4 text-xs">
+      <div>
+        <label class="block font-semibold text-slate-300 mb-1">Type</label>
+        <select id="tx-type" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none">
+          <option value="EXPENSE">Expense</option>
+          <option value="INCOME">Income</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-300 mb-1">Description</label>
+        <input type="text" id="tx-desc" required placeholder="e.g. Grocery store, Client Payment" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Amount ($)</label>
+          <input type="number" step="0.01" id="tx-amount" required placeholder="0.00" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Category</label>
+          <select id="tx-category" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none">
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Salary">Salary</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Bills & Utilities">Bills & Utilities</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Entertainment">Entertainment</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-semibold text-slate-300 mb-1">Date</label>
+        <input type="date" id="tx-date" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none">
+      </div>
+
+      <div class="pt-3 flex items-center justify-end gap-3">
+        <button type="button" onclick="closeAddModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-semibold hover:bg-slate-700">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-500">Save Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Notification Toast Container -->
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+<script>
+// App State
+let transactions = [
+  { id: '1', date: '2026-09-28', description: 'Monthly Salary', amount: 3500.00, category: 'Salary', type: 'INCOME' },
+  { id: '2', date: '2026-09-29', description: 'Supermarket Groceries', amount: 142.50, category: 'Food & Dining', type: 'EXPENSE' },
+  { id: '3', date: '2026-09-30', description: 'Cloud Server Hosting', amount: 45.00, category: 'Bills & Utilities', type: 'EXPENSE' }
+];
+
+let githubConfig = {
+  token: '',
+  repo: '',
+  branch: 'main',
+  path: 'data/pocketsmart_backup.json',
+  connected: false,
+  lastSync: null
+};
+
+let chartInstance = null;
+
+// Initialize App on DOM Load
+window.onload = function() {
+  loadLocalStorage();
+  setupInitialDate();
+  renderAll();
+  initChart();
+};
+
+function setupInitialDate() {
+  const dateInput = document.getElementById('tx-date');
+  if (dateInput) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+}
+
+function loadLocalStorage() {
+  const savedTx = localStorage.getItem('pocketsmart_tx');
+  if (savedTx) {
+    try { transactions = JSON.parse(savedTx); } catch(e){}
+  }
+
+  const savedGh = localStorage.getItem('pocketsmart_gh_config');
+  if (savedGh) {
+    try { 
+      githubConfig = JSON.parse(savedGh);
+      document.getElementById('gh-pat-token').value = githubConfig.token || '';
+      document.getElementById('gh-repo-path').value = githubConfig.repo || '';
+      document.getElementById('gh-branch-name').value = githubConfig.branch || 'main';
+      document.getElementById('gh-file-path').value = githubConfig.path || 'data/pocketsmart_backup.json';
+    } catch(e){}
+  }
+}
+
+function saveLocalStorage() {
+  localStorage.setItem('pocketsmart_tx', JSON.stringify(transactions));
+  localStorage.setItem('pocketsmart_gh_config', JSON.stringify(githubConfig));
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.nav-btn').forEach(el => {
+    el.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+    el.classList.add('text-slate-400');
+  });
+
+  const selectedContent = document.getElementById(`tab-${tabId}`);
+  const selectedNav = document.getElementById(`nav-${tabId}`);
+  
+  if (selectedContent) selectedContent.classList.remove('hidden');
+  if (selectedNav) {
+    selectedNav.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+    selectedNav.classList.remove('text-slate-400');
+  }
+
+  // Update Top Bar Title
+  const titleMap = {
+    'dashboard': '<i class="fa-solid fa-chart-pie text-indigo-400"></i> Financial Dashboard',
+    'transactions': '<i class="fa-solid fa-receipt text-indigo-400"></i> Transaction Records',
+    'github': '<i class="fa-brands fa-github text-indigo-400"></i> GitHub Synchronization Hub',
+    'ai-advisor': '<i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> AI Financial Advisor'
+  };
+  document.getElementById('page-title').innerHTML = titleMap[tabId] || 'PocketSmart AI';
+
+  if (tabId === 'dashboard') {
+    updateChart();
+  }
+}
+
+// Toggle PAT Token Password Mask
+function toggleTokenVisibility() {
+  const tokenInput = document.getElementById('gh-pat-token');
+  const icon = document.getElementById('toggle-token-icon');
+  if (tokenInput.type === 'password') {
+    tokenInput.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    tokenInput.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
+
+function saveGitHubConfig() {
+  githubConfig.token = document.getElementById('gh-pat-token').value.trim();
+  githubConfig.repo = document.getElementById('gh-repo-path').value.trim();
+  githubConfig.branch = document.getElementById('gh-branch-name').value.trim() || 'main';
+  githubConfig.path = document.getElementById('gh-file-path').value.trim() || 'data/pocketsmart_backup.json';
+
+  saveLocalStorage();
+  showToast('GitHub configuration saved locally.', 'success');
+  updateGitHubUIStatus();
+}
+
+async function testGitHubConnection() {
+  saveGitHubConfig();
+
+  if (!githubConfig.repo) {
+    showToast('Please enter a repository name (owner/repo).', 'error');
+    return;
+  }
+
+  showToast('Connecting to GitHub API...', 'info');
+
+  try {
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (githubConfig.token) {
+      headers['Authorization'] = `token ${githubConfig.token}`;
+    }
+
+    const res = await fetch(`https://api.github.com/repos/${githubConfig.repo}`, { headers });
+    
+    if (!res.ok) {
+      throw new Error(`GitHub API Error (${res.status}): Repo not found or invalid token.`);
+    }
+
+    const repoData = await res.json();
+    githubConfig.connected = true;
+    saveLocalStorage();
+
+    // Populate Repo Meta UI
+    document.getElementById('meta-repo-name').textContent = repoData.full_name || githubConfig.repo;
+    document.getElementById('meta-repo-stars').textContent = `${repoData.stargazers_count || 0} ★`;
+    document.getElementById('meta-repo-branch').textContent = repoData.default_branch || githubConfig.branch;
+    document.getElementById('meta-repo-vis').textContent = repoData.private ? 'Private' : 'Public';
+
+    updateGitHubUIStatus();
+    fetchCommitHistory();
+    showToast(`Connected to ${repoData.full_name} successfully!`, 'success');
+
+  } catch (err) {
+    githubConfig.connected = false;
+    updateGitHubUIStatus();
+    showToast(err.message, 'error');
+  }
+}
+
+/* UTF-8 Safe Base64 Helper Functions */
+function utf8ToBase64(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    return String.fromCharCode('0x' + p1);
+  }));
+}
+
+function base64ToUtf8(str) {
+  return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+
+async function pushToGitHub() {
+  saveGitHubConfig();
+
+  if (!githubConfig.token || !githubConfig.repo) {
+    showToast('GitHub PAT Token & Repository owner/repo are required to push data.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-push-gh');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Committing...`;
+
+  try {
+    const headers = {
+      'Authorization': `token ${githubConfig.token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    };
+
+    const targetUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.path}`;
+
+    // Step 1: Check if file already exists to get its SHA
+    let existingSha = null;
+    try {
+      const getFileRes = await fetch(`${targetUrl}?ref=${githubConfig.branch}`, { headers });
+      if (getFileRes.ok) {
+        const fileInfo = await getFileRes.json();
+        existingSha = fileInfo.sha;
+      }
+    } catch(e){}
+
+    // Step 2: Prepare JSON payload
+    const payload = {
+      app: 'PocketSmart AI',
+      timestamp: new Date().toISOString(),
+      recordCount: transactions.length,
+      transactions: transactions
+    };
+
+    const contentBase64 = utf8ToBase64(JSON.stringify(payload, null, 2));
+
+    const commitBody = {
+      message: `PocketSmart Sync: ${transactions.length} records [${new Date().toLocaleString()}]`,
+      content: contentBase64,
+      branch: githubConfig.branch
+    };
+
+    if (existingSha) {
+      commitBody.sha = existingSha;
+    }
+
+    // Step 3: Send PUT request
+    const putRes = await fetch(targetUrl, {
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify(commitBody)
+    });
+
+    if (!putRes.ok) {
+      const errorJson = await putRes.json();
+      throw new Error(errorJson.message || 'Failed to push to GitHub.');
+    }
+
+    githubConfig.lastSync = new Date().toLocaleTimeString();
+    githubConfig.connected = true;
+    saveLocalStorage();
+    updateGitHubUIStatus();
+    fetchCommitHistory();
+
+    showToast('Data pushed & committed to GitHub repo successfully!', 'success');
+
+  } catch (err) {
+    showToast(`Push Error: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-upload"></i> Commit & Push Data`;
+  }
+}
+
+async function pullFromGitHub() {
+  saveGitHubConfig();
+
+  if (!githubConfig.repo) {
+    showToast('Please specify a GitHub repository.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-pull-gh');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Fetching...`;
+
+  try {
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (githubConfig.token) {
+      headers['Authorization'] = `token ${githubConfig.token}`;
+    }
+
+    const targetUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.path}?ref=${githubConfig.branch}`;
+    const res = await fetch(targetUrl, { headers });
+
+    if (!res.ok) {
+      throw new Error(`File not found in repo at ${githubConfig.path}`);
+    }
+
+    const fileData = await res.json();
+    const rawContent = base64ToUtf8(fileData.content.replace(/\n/g, ''));
+    const parsed = JSON.parse(rawContent);
+
+    if (parsed && Array.isArray(parsed.transactions)) {
+      transactions = parsed.transactions;
+      saveLocalStorage();
+      renderAll();
+      showToast(`Restored ${transactions.length} transactions from GitHub!`, 'success');
+    } else {
+      throw new Error('Invalid backup file structure found on GitHub.');
+    }
+
+  } catch (err) {
+    showToast(`Pull Error: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-download"></i> Fetch & Restore Data`;
+  }
+}
+
+async function fetchCommitHistory() {
+  if (!githubConfig.repo) return;
+
+  const container = document.getElementById('commit-history-list');
+  try {
+    const headers = { 'Accept': 'application/vnd.github.v3+json' };
+    if (githubConfig.token) headers['Authorization'] = `token ${githubConfig.token}`;
+
+    const res = await fetch(`https://api.github.com/repos/${githubConfig.repo}/commits?path=${githubConfig.path}&per_page=5`, { headers });
+    if (!res.ok) return;
+
+    const commits = await res.json();
+    if (!Array.isArray(commits) || commits.length === 0) {
+      container.innerHTML = `<div class="text-slate-500 text-xs py-4 text-center">No commits found for ${githubConfig.path}</div>`;
+      return;
+    }
+
+    container.innerHTML = commits.map(c => `
+      <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1">
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="font-mono text-indigo-400 font-bold">${c.sha.substring(0, 7)}</span>
+          <span class="text-slate-500">${new Date(c.commit.committer.date).toLocaleDateString()}</span>
+        </div>
+        <div class="text-slate-200 font-medium truncate">${c.commit.message}</div>
+        <div class="text-[10px] text-slate-500">by ${c.commit.author.name}</div>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    container.innerHTML = `<div class="text-slate-500 text-xs py-2 text-center">Unable to load commit history.</div>`;
+  }
+}
+
+function triggerQuickGitHubSync() {
+  if (!githubConfig.token || !githubConfig.repo) {
+    switchTab('github');
+    showToast('Configure GitHub repository settings first.', 'info');
+  } else {
+    pushToGitHub();
+  }
+}
+
+function updateGitHubUIStatus() {
+  const isConnected = githubConfig.connected && githubConfig.repo;
+  const statusText = isConnected ? 'Connected' : 'Offline';
+  
+  document.getElementById('nav-github-badge').textContent = statusText;
+  document.getElementById('nav-github-badge').className = `ml-auto text-[10px] px-2 py-0.5 rounded-full border ${isConnected ? 'bg-emerald-950 text-emerald-400 border-emerald-800' : 'bg-slate-800 text-slate-400 border-slate-700'}`;
+
+  document.getElementById('quick-repo-name').textContent = githubConfig.repo || 'Not Connected';
+  document.getElementById('quick-status-dot').className = `w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-500 animate-pulse'}`;
+
+  document.getElementById('gh-status-text').textContent = isConnected ? `Connected to ${githubConfig.repo}` : 'Disconnected';
+  document.getElementById('gh-status-dot').className = `w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-slate-500'}`;
+
+  document.getElementById('stat-github-status').textContent = isConnected ? (githubConfig.lastSync ? `Synced ${githubConfig.lastSync}` : 'Ready') : 'Not Synced';
+}
+
+function renderAll() {
+  renderTransactions();
+  renderMetrics();
+  updateGitHubUIStatus();
+  if (chartInstance) updateChart();
+}
+
+function renderMetrics() {
+  let income = 0;
+  let expenses = 0;
+
+  transactions.forEach(t => {
+    if (t.type === 'INCOME') income += parseFloat(t.amount);
+    else expenses += parseFloat(t.amount);
+  });
+
+  const balance = income - expenses;
+
+  document.getElementById('stat-balance').textContent = `$${balance.toFixed(2)}`;
+  document.getElementById('stat-income').textContent = `$${income.toFixed(2)}`;
+  document.getElementById('stat-expenses').textContent = `$${expenses.toFixed(2)}`;
+
+  // Health Metrics
+  const savingsPct = income > 0 ? Math.max(0, Math.min(100, ((income - expenses) / income) * 100)) : 0;
+  const burnPct = income > 0 ? Math.min(100, (expenses / income) * 100) : 0;
+
+  document.getElementById('health-savings-pct').textContent = `${savingsPct.toFixed(0)}%`;
+  document.getElementById('health-savings-bar').style.width = `${savingsPct}%`;
+
+  document.getElementById('health-burn-pct').textContent = `${burnPct.toFixed(0)}%`;
+  document.getElementById('health-burn-bar').style.width = `${burnPct}%`;
+}
+
+function renderTransactions() {
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const catFilter = document.getElementById('filter-category')?.value || 'ALL';
+
+  const filtered = transactions.filter(t => {
+    const matchesSearch = t.description.toLowerCase().includes(search) || t.category.toLowerCase().includes(search);
+    const matchesCat = catFilter === 'ALL' || t.category === catFilter;
+    return matchesSearch && matchesCat;
+  });
+
+  const tbody = document.getElementById('transactions-table-body');
+  const dashboardRecent = document.getElementById('dashboard-recent-list');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-500">No transaction records found.</td></tr>`;
+  } else {
+    tbody.innerHTML = filtered.map(t => `
+      <tr class="hover:bg-slate-800/40 transition-colors">
+        <td class="p-4 font-mono text-slate-400">${t.date}</td>
+        <td class="p-4 font-semibold text-white">${t.description}</td>
+        <td class="p-4">
+          <span class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-[11px]">
+            ${t.category}
+          </span>
+        </td>
+        <td class="p-4">
+          <span class="font-bold ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-rose-400'}">
+            ${t.type}
+          </span>
+        </td>
+        <td class="p-4 text-right font-mono font-bold ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-slate-200'}">
+          ${t.type === 'INCOME' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
+        </td>
+        <td class="p-4 text-center">
+          <button onclick="deleteTransaction('${t.id}')" class="text-slate-500 hover:text-rose-400 p-1">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Render recent 3 in dashboard
+  const recent3 = [...transactions].reverse().slice(0, 3);
+  if (dashboardRecent) {
+    dashboardRecent.innerHTML = recent3.map(t => `
+      <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+        <div>
+          <div class="text-xs font-semibold text-white">${t.description}</div>
+          <div class="text-[10px] text-slate-500">${t.category} • ${t.date}</div>
+        </div>
+        <div class="font-mono text-xs font-bold ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-slate-200'}">
+          ${t.type === 'INCOME' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function initChart() {
+  const ctx = document.getElementById('expenseChart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: getChartData(),
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } }
+      },
+      scales: {
+        x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+        y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!chartInstance) return;
+  chartInstance.data = getChartData();
+  chartInstance.update();
+}
+
+function getChartData() {
+  const categories = ['Food & Dining', 'Salary', 'Shopping', 'Bills & Utilities', 'Freelance', 'Entertainment'];
+  const incomeData = categories.map(cat => 
+    transactions.filter(t => t.category === cat && t.type === 'INCOME').reduce((acc, curr) => acc + parseFloat(curr.amount), 0)
+  );
+  const expenseData = categories.map(cat => 
+    transactions.filter(t => t.category === cat && t.type === 'EXPENSE').reduce((acc, curr) => acc + parseFloat(curr.amount), 0)
+  );
+
+  return {
+    labels: categories,
+    datasets: [
+      { label: 'Income ($)', data: incomeData, backgroundColor: '#10b981', borderRadius: 6 },
+      { label: 'Expenses ($)', data: expenseData, backgroundColor: '#6366f1', borderRadius: 6 }
+    ]
+  };
+}
+
+function openAddModal() {
+  document.getElementById('modal-add').classList.remove('hidden');
+}
+
+function closeAddModal() {
+  document.getElementById('modal-add').classList.add('hidden');
+}
+
+function handleSaveTransaction(e) {
+  e.preventDefault();
+  const type = document.getElementById('tx-type').value;
+  const description = document.getElementById('tx-desc').value.trim();
+  const amount = parseFloat(document.getElementById('tx-amount').value);
+  const category = document.getElementById('tx-category').value;
+  const date = document.getElementById('tx-date').value;
+
+  if (!description || isNaN(amount) || amount <= 0) {
+    showToast('Please enter a valid description and amount.', 'error');
+    return;
+  }
+
+  const newTx = { id: Date.now().toString(), date, description, amount, category, type };
+  transactions.push(newTx);
+  saveLocalStorage();
+  renderAll();
+  closeAddModal();
+  showToast('New transaction record saved!', 'success');
+
+  // Clear form
+  document.getElementById('tx-desc').value = '';
+  document.getElementById('tx-amount').value = '';
+}
+
+function deleteTransaction(id) {
+  transactions = transactions.filter(t => t.id !== id);
+  saveLocalStorage();
+  renderAll();
+  showToast('Record deleted.', 'info');
+}
+
+function runAIAdvisor(type) {
+  const box = document.getElementById('ai-response-box');
+  box.innerHTML = `<div class="flex items-center gap-2 text-indigo-400 font-medium"><i class="fa-solid fa-spinner animate-spin"></i> AI Analyzing transactions...</div>`;
+
+  setTimeout(() => {
+    let income = transactions.filter(t => t.type === 'INCOME').reduce((a, b) => a + parseFloat(b.amount), 0);
+    let expenses = transactions.filter(t => t.type === 'EXPENSE').reduce((a, b) => a + parseFloat(b.amount), 0);
+    let net = income - expenses;
+
+    if (type === 'spending') {
+      box.innerHTML = `
+        <div class="space-y-2">
+          <p class="font-bold text-white">💡 Spending Habit Diagnostic:</p>
+          <ul class="list-disc list-inside space-y-1 text-slate-300">
+            <li>Total tracked outgoing expenses: <strong class="text-rose-400">$${expenses.toFixed(2)}</strong> across ${transactions.filter(t=>t.type==='EXPENSE').length} transactions.</li>
+            <li>Largest expense category: <strong>${getTopCategory()}</strong>.</li>
+            <li>Recommendation: Consider setting up an auto-save rule of 15% on incoming salary payments to maximize compound interest.</li>
+          </ul>
+        </div>
+      `;
+    } else if (type === 'budget') {
+      let score = net > 0 ? (income > 0 && (expenses/income < 0.6) ? 'A+ (Excellent)' : 'B (Good)') : 'C- (Deficit Warning)';
+      box.innerHTML = `
+        <div class="space-y-2">
+          <p class="font-bold text-white">📊 Budget Health Assessment:</p>
+          <p>Overall Budget Rating: <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-bold border border-indigo-800">${score}</span></p>
+          <p>Your current net monthly cashflow is <strong>$${net.toFixed(2)}</strong>.</p>
+        </div>
+      `;
+    } else if (type === 'github-report') {
+      const markdown = `# 📊 PocketSmart AI Financial Summary\n\n- **Generated Date:** ${new Date().toLocaleDateString()}\n- **Total Net Balance:** $${net.toFixed(2)}\n- **Total Income:** $${income.toFixed(2)}\n- **Total Expenses:** $${expenses.toFixed(2)}\n- **Record Count:** ${transactions.length}\n\n*Synced via PocketSmart AI GitHub Integration Module.*`;
+      box.innerHTML = `
+        <div class="space-y-2">
+          <p class="font-bold text-white">📝 Generated Markdown Report (Ready for GitHub Commit):</p>
+          <textarea class="w-full h-28 bg-slate-900 text-indigo-300 font-mono p-2 rounded-xl text-[11px] border border-slate-800 focus:outline-none" readonly>${markdown}</textarea>
+        </div>
+      `;
+    }
+  }, 600);
+}
+
+function getTopCategory() {
+  const catTotals = {};
+  transactions.filter(t => t.type === 'EXPENSE').forEach(t => {
+    catTotals[t.category] = (catTotals[t.category] || 0) + parseFloat(t.amount);
+  });
+  let topCat = 'None';
+  let max = 0;
+  for (let c in catTotals) {
+    if (catTotals[c] > max) { max = catTotals[c]; topCat = c; }
+  }
+  return topCat;
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+
+  const bgMap = {
+    'success': 'bg-emerald-950 border-emerald-700 text-emerald-200',
+    'error': 'bg-rose-950 border-rose-700 text-rose-200',
+    'info': 'bg-slate-900 border-indigo-700 text-indigo-200'
+  };
+
+  const iconMap = {
+    'success': 'fa-circle-check text-emerald-400',
+    'error': 'fa-triangle-exclamation text-rose-400',
+    'info': 'fa-circle-info text-indigo-400'
+  };
+
+  toast.className = `p-3.5 rounded-xl border shadow-xl flex items-center gap-3 text-xs max-w-sm transition-all duration-300 transform translate-y-2 ${bgMap[type] || bgMap['info']}`;
+  toast.innerHTML = `
+    <i class="fa-solid ${iconMap[type] || iconMap['info']} text-base"></i>
+    <span class="font-medium">${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'translate-y-4');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+</script>
+
+</body>
+</html>
